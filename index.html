@@ -708,10 +708,9 @@
     <p>© 2026 CODEWAVE HACKATHON. CSE DEPARTMENT, PYDAH COLLEGE.</p>
   </footer>
 
-  <!-- Firebase Backend Script with Robust Auth & Realtime Sync -->
+  <!-- Firebase Backend Script (Zero Login / Direct Firestore) -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
     import { getFirestore, collection, addDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
     const explicitFirebaseConfig = {
@@ -725,30 +724,14 @@
     };
 
     const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : explicitFirebaseConfig;
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'codewave-92f1f';
 
     let db = null;
-    let auth = null;
-    let currentUser = null;
 
     try {
       const app = initializeApp(firebaseConfig);
       db = getFirestore(app);
-      try {
-        auth = getAuth(app);
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          signInWithCustomToken(auth, __initial_auth_token).catch(() => {});
-        } else {
-          signInAnonymously(auth).catch(() => {});
-        }
-        onAuthStateChanged(auth, (user) => {
-          currentUser = user;
-        });
-      } catch (authErr) {
-        // Auth is optional for direct Firestore rules
-      }
 
-      // Mark DB Active and start realtime listener immediately
+      // Set DB Status Active and start realtime listener immediately
       const dbBadge = document.getElementById('dbStatusText');
       const dbDot = document.getElementById('dbStatusDot');
       if (dbBadge) dbBadge.textContent = "Cloud DB Active";
@@ -803,7 +786,6 @@
         // Timeout safeguard so UI never hangs
         const savePromise = addDoc(publicColRef, {
           ...registrationData,
-          userId: currentUser ? currentUser.uid : 'attendee',
           createdAt: new Date().toISOString()
         });
 

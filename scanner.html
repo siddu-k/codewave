@@ -232,10 +232,9 @@
     CODEWAVE 2K26 • CSE DEPT • PYDAH COLLEGE
   </footer>
 
-  <!-- Firebase Script -->
+  <!-- Firebase Script (Zero Login / Direct Firestore) -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-    import { getAuth, signInWithCustomToken, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
     import { getFirestore, collection, onSnapshot, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
     const explicitFirebaseConfig = {
@@ -249,26 +248,13 @@
     };
 
     const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : explicitFirebaseConfig;
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'codewave-92f1f';
 
     let db = null;
-    let auth = null;
     let registrations = [];
 
     try {
       const app = initializeApp(firebaseConfig);
       db = getFirestore(app);
-
-      try {
-        auth = getAuth(app);
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          signInWithCustomToken(auth, __initial_auth_token).catch(() => {});
-        } else {
-          signInAnonymously(auth).catch(() => {});
-        }
-      } catch (authErr) {
-        // Direct Firestore rules allow direct access
-      }
 
       const colRef = collection(db, 'registrations');
       onSnapshot(colRef, (snapshot) => {

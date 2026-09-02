@@ -173,16 +173,6 @@
       </a>
 
       <div class="flex items-center gap-3">
-        <div id="dbStatusBadge" class="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/90 border border-slate-700 text-[10px] font-mono text-slate-400">
-          <span id="dbStatusDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-          <span id="dbStatusText">Initializing Cloud DB...</span>
-        </div>
-
-        <a href="scanner.html" class="px-3.5 py-1.5 rounded-full bg-pink-950/60 border border-pink-500/70 text-pink-300 hover:bg-pink-500 hover:text-black text-xs font-mono font-bold tracking-wider uppercase transition flex items-center gap-1">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
-          <span>ADMIN SCANNER</span>
-        </a>
-
         <a href="#registerSection" class="px-4 py-1.5 rounded-full border border-cyan-400/80 text-cyan-300 hover:bg-cyan-400 hover:text-black text-xs font-mono font-bold tracking-wider uppercase transition duration-200">
           REGISTER
         </a>
@@ -199,7 +189,6 @@
       <a href="#tracks" class="text-slate-300 hover:text-cyan-400">TRACKS</a>
       <a href="#registerSection" class="text-slate-300 hover:text-cyan-400">REGISTRATION</a>
       <a href="#squadsTicker" class="text-slate-300 hover:text-cyan-400">LIVE SQUADS</a>
-      <a href="scanner.html" class="text-pink-400 font-bold hover:text-pink-300">ADMIN SCANNER</a>
       <a href="#countdown" class="text-slate-300 hover:text-cyan-400">SCHEDULE</a>
     </div>
   </nav>
@@ -730,19 +719,9 @@
     try {
       const app = initializeApp(firebaseConfig);
       db = getFirestore(app);
-
-      // Set DB Status Active and start realtime listener immediately
-      const dbBadge = document.getElementById('dbStatusText');
-      const dbDot = document.getElementById('dbStatusDot');
-      if (dbBadge) dbBadge.textContent = "Cloud DB Active";
-      if (dbDot) {
-        dbDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
-      }
       listenToLiveRegistrations();
     } catch (e) {
       console.warn("Firebase startup note:", e);
-      const dbBadge = document.getElementById('dbStatusText');
-      if (dbBadge) dbBadge.textContent = "Local Pass Mode";
     }
 
     function listenToLiveRegistrations() {

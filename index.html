@@ -593,70 +593,77 @@
         </span>
       </div>
 
-      <!-- Clean Official Pass Card for Display & PNG Download -->
+      <!-- Clean Professional Official Pass Badge for Display & PNG Download -->
       <div class="flex justify-center">
-        <div id="digitalTicketCard" class="w-full max-w-[460px] bg-[#070c18] border-2 border-cyan-400/80 rounded-3xl p-6 sm:p-7 text-white shadow-2xl space-y-5 relative overflow-hidden">
+        <div id="digitalTicketCard" class="w-full max-w-[420px] bg-[#090e1a] border-2 border-cyan-400 rounded-[28px] p-6 sm:p-7 text-white shadow-2xl space-y-4 text-center relative overflow-hidden" style="box-shadow: 0 0 35px rgba(0, 242, 254, 0.15);">
           
-          <!-- Top Holographic Bar -->
-          <div class="h-1.5 bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500 absolute top-0 left-0 right-0"></div>
+          <!-- Top Cyber Strip -->
+          <div class="h-1.5 bg-gradient-to-r from-cyan-400 via-pink-500 to-cyan-400 absolute top-0 left-0 right-0"></div>
 
-          <!-- Pass Badge Header & Lanyard Hole -->
-          <div class="text-center space-y-1 pb-3 border-b border-slate-800">
-            <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-slate-900 border border-slate-700 text-[10px] font-mono text-cyan-400 font-bold uppercase tracking-widest">
-              <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
-              <span>OFFICIAL EVENT PASS</span>
-            </div>
-            <h3 class="text-2xl font-black text-white tracking-wider">
-              CODEWAVE <span class="text-cyan-400 italic">2K26</span>
+          <!-- Lanyard Slot Accent -->
+          <div class="flex justify-center pt-1">
+            <div class="w-16 h-1.5 rounded-full bg-slate-800 border border-slate-700"></div>
+          </div>
+
+          <!-- Event Title -->
+          <div class="space-y-0.5">
+            <span class="inline-block px-3 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-500/60 text-[10px] font-mono font-bold text-cyan-300 uppercase tracking-widest">
+              OFFICIAL ENTRY PASS
+            </span>
+            <h3 class="text-2xl sm:text-3xl font-black tracking-tight text-white pt-1">
+              CODEWAVE <span class="text-cyan-400">2K26</span>
             </h3>
-            <p class="text-[10px] font-mono text-pink-400 uppercase font-bold tracking-widest">
+            <p class="text-[10px] font-mono text-pink-400 font-bold uppercase tracking-wider">
               PYDAH COLLEGE • 03 SEPT 2026
             </p>
           </div>
 
+          <!-- Divider -->
+          <div class="w-full border-t border-slate-800/90"></div>
+
           <!-- Team Name & Domain Track -->
-          <div class="bg-[#050914] rounded-2xl p-4 border border-slate-800/90 space-y-2 text-center">
-            <div>
-              <p class="text-[9px] font-mono text-cyan-400 uppercase tracking-widest font-bold">TEAM NAME</p>
-              <h4 id="badgeTeamName" class="text-xl sm:text-2xl font-black text-white tracking-wide uppercase">
-                CodeWave Squad
-              </h4>
-            </div>
-            <div class="flex items-center justify-center gap-2 pt-1">
-              <span class="text-[9px] font-mono text-slate-400 uppercase tracking-wider">DOMAIN:</span>
-              <span id="badgeTrackName" class="px-3 py-0.5 rounded-lg bg-cyan-950 border border-cyan-400 text-cyan-300 font-mono text-xs font-black uppercase tracking-wider">
+          <div class="space-y-1.5 py-1">
+            <p class="text-[9px] font-mono text-slate-400 uppercase tracking-widest font-semibold">TEAM NAME</p>
+            <h4 id="badgeTeamName" class="text-xl sm:text-2xl font-black text-white tracking-wide uppercase break-words">
+              TEAM NAME
+            </h4>
+            <div class="pt-0.5">
+              <span id="badgeTrackName" class="inline-block px-3.5 py-1 rounded-lg bg-cyan-950 border border-cyan-400 text-cyan-300 font-mono text-xs font-black uppercase tracking-wider">
                 HEALTHCARE
               </span>
             </div>
           </div>
 
-          <!-- Squad Leader & Members (Names Only) -->
-          <div class="space-y-2">
-            <p class="text-[9px] font-mono text-slate-400 uppercase tracking-widest text-center">
-              REGISTERED SQUAD MEMBERS
+          <!-- Squad Roster (Names Only) -->
+          <div class="space-y-2 py-1">
+            <p class="text-[9px] font-mono text-slate-400 uppercase tracking-widest font-semibold">
+              SQUAD MEMBERS
             </p>
-            <div id="badgeSquadList" class="space-y-1.5 font-mono">
+            <div id="badgeSquadList" class="space-y-1.5 font-mono text-left">
               <!-- Dynamically populated names only -->
             </div>
           </div>
 
+          <!-- Divider -->
+          <div class="w-full border-t border-slate-800/90"></div>
+
           <!-- QR Code & Token ID Section -->
-          <div class="bg-slate-950/90 rounded-2xl p-4 border border-cyan-500/30 flex flex-col items-center justify-center text-center space-y-2">
-            <div class="p-2 bg-white rounded-xl shadow-md">
+          <div class="flex flex-col items-center justify-center space-y-2 pt-1">
+            <div class="p-2.5 bg-white rounded-2xl shadow-xl inline-block">
               <div id="qrcode" class="flex items-center justify-center"></div>
             </div>
             <div>
-              <p class="text-[9px] font-mono text-slate-400 uppercase tracking-wider">PASS TOKEN ID</p>
-              <p id="badgeUID" class="text-sm font-mono font-black text-cyan-400 tracking-widest">
+              <p class="text-[9px] font-mono text-slate-400 uppercase tracking-wider font-semibold">PASS TOKEN ID</p>
+              <p id="badgeUID" class="text-base font-mono font-black text-cyan-400 tracking-widest mt-0.5">
                 CW26-000000
               </p>
             </div>
           </div>
 
-          <!-- Pass Footer Stamp -->
+          <!-- Pass Footer Security Seal -->
           <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[9px] font-mono text-slate-500">
             <span>CSE DEPARTMENT</span>
-            <span class="text-cyan-400 font-bold uppercase">VERIFIED ATTENDEE</span>
+            <span class="text-cyan-400 font-bold uppercase tracking-wider">VERIFIED ATTENDEE</span>
           </div>
 
         </div>
@@ -983,18 +990,16 @@
           const item = document.createElement('div');
           const isLeader = idx === 0;
           
-          item.className = isLeader 
-            ? 'p-2.5 rounded-xl bg-slate-900/90 border border-cyan-500/40 flex items-center justify-between text-xs'
-            : 'p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 flex items-center justify-between text-xs';
+          item.className = "px-3.5 py-2 rounded-xl bg-slate-950/80 border border-slate-800/90 flex items-center justify-between text-xs";
           
           const roleTag = isLeader
-            ? `<span class="px-2 py-0.5 rounded bg-amber-950/80 border border-amber-500/60 text-amber-300 text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
+            ? `<span class="px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-400/80 text-amber-300 text-[10px] font-bold tracking-wide flex items-center gap-1">
                  <span>👑 LEADER</span>
                </span>`
-            : `<span class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-[9px] font-bold uppercase tracking-wider">MEMBER</span>`;
+            : `<span class="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-700 text-slate-400 text-[10px] font-bold tracking-wide">MEMBER</span>`;
 
           item.innerHTML = `
-            <span class="font-bold ${isLeader ? 'text-cyan-200' : 'text-slate-200'} text-xs truncate max-w-[280px]">${m.name}</span>
+            <span class="font-bold ${isLeader ? 'text-white' : 'text-slate-200'} text-xs truncate max-w-[250px]">${m.name}</span>
             ${roleTag}
           `;
           rosterList.appendChild(item);
@@ -1133,13 +1138,11 @@
         target.roster.forEach((m, idx) => {
           const item = document.createElement('div');
           const isLeader = idx === 0;
-          item.className = isLeader 
-            ? 'p-2.5 rounded-xl bg-slate-900/90 border border-cyan-500/40 flex items-center justify-between text-xs font-mono'
-            : 'p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 flex items-center justify-between text-xs font-mono';
+          item.className = "px-3.5 py-2 rounded-xl bg-slate-950/80 border border-slate-800/90 flex items-center justify-between text-xs";
           
           item.innerHTML = `
-            <span class="font-bold ${isLeader ? 'text-cyan-200' : 'text-slate-200'} text-xs truncate">${m.name}</span>
-            <span class="px-2 py-0.5 rounded ${isLeader ? 'bg-amber-950 text-amber-300 border border-amber-600' : 'bg-slate-800 text-slate-400'} text-[9px] font-bold">${isLeader ? '👑 LEADER' : 'MEMBER'}</span>
+            <span class="font-bold ${isLeader ? 'text-white' : 'text-slate-200'} text-xs truncate max-w-[250px]">${m.name}</span>
+            <span class="px-2 py-0.5 rounded-md ${isLeader ? 'bg-amber-500/15 border border-amber-400/80 text-amber-300' : 'bg-slate-900 border border-slate-700 text-slate-400'} text-[10px] font-bold tracking-wide">${isLeader ? '👑 LEADER' : 'MEMBER'}</span>
           `;
           rosterList.appendChild(item);
         });
@@ -1171,7 +1174,7 @@
     function downloadTicketImage() {
       const ticketElement = document.getElementById('digitalTicketCard');
       html2canvas(ticketElement, {
-        backgroundColor: '#070c18',
+        backgroundColor: '#090e1a',
         scale: 3,
         useCORS: true,
         logging: false

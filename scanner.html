@@ -8,6 +8,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- HTML5 QR Code Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <!-- SheetJS for Excel (.xlsx) Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -72,10 +74,16 @@
       </div>
 
       <div class="flex items-center gap-2">
+        <!-- Export Excel Button -->
+        <button onclick="exportRegistrationsToExcel()" class="px-3 py-1.5 rounded-lg bg-emerald-950 border border-emerald-500/60 hover:bg-emerald-400 hover:text-black text-emerald-300 font-mono font-bold text-xs transition flex items-center gap-1.5 shadow-sm" title="Export all registrations to Excel">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span class="hidden sm:inline">Export</span> Excel
+        </button>
+
         <!-- View Registrations Button -->
         <button onclick="openRegistrationsModal()" class="px-3 py-1.5 rounded-lg bg-cyan-950 border border-cyan-500/60 hover:bg-cyan-400 hover:text-black text-cyan-300 font-mono font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-          <span>View Registrations</span>
+          <span class="hidden sm:inline">View</span> Registrations
           <span id="headerCountBadge" class="text-[10px] px-1.5 py-0.2 rounded-full bg-cyan-900 text-cyan-200 ml-0.5">0</span>
         </button>
 
@@ -202,7 +210,7 @@
     <div class="bg-[#080d1a] border border-cyan-500/40 rounded-3xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
       
       <!-- Modal Header -->
-      <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/90">
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/90 gap-2">
         <div>
           <h3 class="font-black text-base text-white flex items-center gap-2">
             <span>REGISTERED SQUADS</span>
@@ -210,9 +218,15 @@
           </h3>
           <p class="text-[11px] font-mono text-slate-400">Complete team-wise attendee details from Firebase</p>
         </div>
-        <button onclick="closeRegistrationsModal()" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white flex items-center justify-center font-bold">
-          ✕
-        </button>
+        <div class="flex items-center gap-2">
+          <button onclick="exportRegistrationsToExcel()" class="px-3 py-1.5 rounded-xl bg-emerald-950 border border-emerald-500/60 hover:bg-emerald-400 hover:text-black text-emerald-300 font-mono font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span>Download Excel</span>
+          </button>
+          <button onclick="closeRegistrationsModal()" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white flex items-center justify-center font-bold">
+            ✕
+          </button>
+        </div>
       </div>
 
       <!-- Search Bar -->
@@ -539,6 +553,104 @@
         document.getElementById('detailsCard').scrollIntoView({ behavior: 'smooth' });
       }
     }
+
+    // Export to Excel / CSV
+    window.exportRegistrationsToExcel = function() {
+      const all = window.getAllSquads ? window.getAllSquads() : [];
+      
+      if (!all || all.length === 0) {
+        alert("No registered squads to export yet!");
+        return;
+      }
+
+      // Format data rows
+      const rows = all.map((team, index) => {
+        const leader = team.leader || (team.roster && team.roster[0] ? team.roster[0] : {});
+        const m2 = team.roster && team.roster[1] ? team.roster[1] : {};
+        const m3 = team.roster && team.roster[2] ? team.roster[2] : {};
+        const m4 = team.roster && team.roster[3] ? team.roster[3] : {};
+
+        return {
+          "S.No": index + 1,
+          "Pass Token UID": team.uid || '',
+          "Team Name": team.teamName || '',
+          "Domain Track": team.track || '',
+          "Team Size": team.teamSize || (team.roster ? team.roster.length : 1),
+          "Payment Status": team.paymentStatus || 'PENDING',
+          "Payment Mode": team.paymentMode || 'NONE',
+          "Leader Name": leader.name || '',
+          "Leader Roll No": leader.roll || '',
+          "Leader Email": leader.email || '',
+          "Leader Phone": leader.phone || '',
+          "Member 2 Name": m2.name || '',
+          "Member 2 Roll": m2.roll || '',
+          "Member 2 Email": m2.email || '',
+          "Member 2 Phone": m2.phone || '',
+          "Member 3 Name": m3.name || '',
+          "Member 3 Roll": m3.roll || '',
+          "Member 3 Email": m3.email || '',
+          "Member 3 Phone": m3.phone || '',
+          "Member 4 Name": m4.name || '',
+          "Member 4 Roll": m4.roll || '',
+          "Member 4 Email": m4.email || '',
+          "Member 4 Phone": m4.phone || '',
+          "Registered Timestamp": team.createdAt || ''
+        };
+      });
+
+      // Use SheetJS if available
+      if (typeof XLSX !== 'undefined') {
+        const worksheet = XLSX.utils.json_to_sheet(rows);
+        
+        // Auto column widths
+        const colWidths = [
+          { wch: 6 },  // S.No
+          { wch: 15 }, // Token UID
+          { wch: 22 }, // Team Name
+          { wch: 16 }, // Track
+          { wch: 10 }, // Size
+          { wch: 14 }, // Payment Status
+          { wch: 14 }, // Payment Mode
+          { wch: 20 }, // Leader Name
+          { wch: 14 }, // Leader Roll
+          { wch: 24 }, // Leader Email
+          { wch: 14 }, // Leader Phone
+          { wch: 20 }, // M2 Name
+          { wch: 14 }, // M2 Roll
+          { wch: 24 }, // M2 Email
+          { wch: 14 }, // M2 Phone
+          { wch: 20 }, // M3 Name
+          { wch: 14 }, // M3 Roll
+          { wch: 24 }, // M3 Email
+          { wch: 14 }, // M3 Phone
+          { wch: 20 }, // M4 Name
+          { wch: 14 }, // M4 Roll
+          { wch: 24 }, // M4 Email
+          { wch: 14 }, // M4 Phone
+          { wch: 25 }  // Timestamp
+        ];
+        worksheet['!cols'] = colWidths;
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Registrations");
+        
+        const dateStr = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(workbook, `CodeWave_2K26_Registrations_${dateStr}.xlsx`);
+      } else {
+        // Fallback to CSV
+        const headers = Object.keys(rows[0]);
+        const csvContent = [
+          headers.join(','),
+          ...rows.map(row => headers.map(fieldName => JSON.stringify(row[fieldName] || '')).join(','))
+        ].join('\r\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `CodeWave_2K26_Registrations_${new Date().toISOString().slice(0, 10)}.csv`;
+        link.click();
+      }
+    };
   </script>
 </body>
 </html>

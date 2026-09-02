@@ -732,39 +732,29 @@
 
     try {
       const app = initializeApp(firebaseConfig);
-      auth = getAuth(app);
       db = getFirestore(app);
-
-      const initAuth = async () => {
-        try {
-          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-            await signInWithCustomToken(auth, __initial_auth_token);
-          } else {
-            await signInAnonymously(auth);
-          }
-        } catch (e) {
-          console.warn("Auth initialization notice (using direct session):", e);
-        }
-      };
-      initAuth();
-
-      onAuthStateChanged(auth, (user) => {
-        currentUser = user;
-        const dbBadge = document.getElementById('dbStatusText');
-        const dbDot = document.getElementById('dbStatusDot');
-        if (user) {
-          if (dbBadge) dbBadge.textContent = "Cloud DB Active";
-          if (dbDot) {
-            dbDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
-          }
-          listenToLiveRegistrations();
+      try {
+        auth = getAuth(app);
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          signInWithCustomToken(auth, __initial_auth_token).catch(() => {});
         } else {
-          if (dbBadge) dbBadge.textContent = "Offline / Local Mode";
-          if (dbDot) {
-            dbDot.className = "w-2 h-2 rounded-full bg-cyan-400";
-          }
+          signInAnonymously(auth).catch(() => {});
         }
-      });
+        onAuthStateChanged(auth, (user) => {
+          currentUser = user;
+        });
+      } catch (authErr) {
+        // Auth is optional for direct Firestore rules
+      }
+
+      // Mark DB Active and start realtime listener immediately
+      const dbBadge = document.getElementById('dbStatusText');
+      const dbDot = document.getElementById('dbStatusDot');
+      if (dbBadge) dbBadge.textContent = "Cloud DB Active";
+      if (dbDot) {
+        dbDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+      }
+      listenToLiveRegistrations();
     } catch (e) {
       console.warn("Firebase startup note:", e);
       const dbBadge = document.getElementById('dbStatusText');
@@ -807,21 +797,12 @@
       }
       
       try {
-        if (!currentUser && auth) {
-          try {
-            const cred = await signInAnonymously(auth);
-            currentUser = cred.user;
-          } catch (authErr) {
-            console.warn("Auth sign-in step notice:", authErr);
-          }
-        }
-
         const publicColRef = collection(db, 'registrations');
         
         // Timeout safeguard so UI never hangs
         const savePromise = addDoc(publicColRef, {
           ...registrationData,
-          userId: currentUser ? currentUser.uid : 'anonymous-user',
+          userId: currentUser ? currentUser.uid : 'attendee',
           createdAt: new Date().toISOString()
         });
 

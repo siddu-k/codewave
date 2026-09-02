@@ -9,6 +9,7 @@
   <!-- HTML5 QR Code Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
@@ -256,13 +257,17 @@
 
     try {
       const app = initializeApp(firebaseConfig);
-      auth = getAuth(app);
       db = getFirestore(app);
 
-      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-        signInWithCustomToken(auth, __initial_auth_token).catch(() => signInAnonymously(auth));
-      } else {
-        signInAnonymously(auth).catch(e => console.warn(e));
+      try {
+        auth = getAuth(app);
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          signInWithCustomToken(auth, __initial_auth_token).catch(() => {});
+        } else {
+          signInAnonymously(auth).catch(() => {});
+        }
+      } catch (authErr) {
+        // Direct Firestore rules allow direct access
       }
 
       const colRef = collection(db, 'registrations');

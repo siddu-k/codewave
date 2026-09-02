@@ -265,7 +265,7 @@
         signInAnonymously(auth).catch(e => console.warn(e));
       }
 
-      const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'registrations');
+      const colRef = collection(db, 'registrations');
       onSnapshot(colRef, (snapshot) => {
         registrations = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         
@@ -300,7 +300,7 @@
     window.updateTeamInCloud = async function(docId, data) {
       if (!db) return { success: false, error: "No DB" };
       try {
-        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'registrations', docId);
+        const docRef = doc(db, 'registrations', docId);
         await updateDoc(docRef, { ...data, updatedAt: new Date().toISOString() });
         return { success: true };
       } catch (err) {

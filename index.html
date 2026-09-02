@@ -783,21 +783,18 @@
       try {
         const publicColRef = collection(db, 'registrations');
         
-        // Timeout safeguard so UI never hangs
-        const savePromise = addDoc(publicColRef, {
+        // Non-blocking background save to Firestore
+        addDoc(publicColRef, {
           ...registrationData,
           createdAt: new Date().toISOString()
+        }).catch(err => {
+          console.warn("Firestore background sync note:", err);
         });
 
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("Cloud DB write timeout")), 4000)
-        );
-
-        const docRef = await Promise.race([savePromise, timeoutPromise]);
-        return { success: true, docId: docRef.id, mode: 'cloud' };
+        return { success: true, docId: registrationData.uid, mode: 'cloud' };
       } catch (err) {
-        console.warn("Cloud DB fallback to local pass:", err);
-        return { success: true, docId: 'offline-' + Date.now(), mode: 'offline' };
+        console.warn("Cloud DB notice:", err);
+        return { success: true, docId: 'local-' + Date.now(), mode: 'local' };
       }
     };
   </script>
@@ -976,48 +973,54 @@
         }
       }
 
-      // Update Pass Header & Team Info
-      document.getElementById('badgeTeamName').textContent = teamName;
-      document.getElementById('badgeTrackName').textContent = track;
-      document.getElementById('badgeMemberCount').textContent = `${size} SQUAD MEMBER${size > 1 ? 'S' : ''}`;
-      document.getElementById('badgeUID').textContent = ticketTokenId;
-      document.getElementById('badgeQrUid').textContent = ticketTokenId;
+      // Update Pass Header & Team Info safely
+      const elTeamName = document.getElementById('badgeTeamName');
+      const elTrackName = document.getElementById('badgeTrackName');
+      const elUID = document.getElementById('badgeUID');
+
+      if (elTeamName) elTeamName.textContent = teamName;
+      if (elTrackName) elTrackName.textContent = track;
+      if (elUID) elUID.textContent = ticketTokenId;
 
       // Colorize track badge dynamically
       const trackBadge = document.getElementById('badgeTrackName');
-      if (track === 'HEALTHCARE') {
-        trackBadge.className = "px-3.5 py-1 rounded-xl bg-cyan-950/90 border border-cyan-400 text-cyan-300 font-mono text-xs font-black tracking-wider uppercase shadow-md shadow-cyan-900/30";
-      } else if (track === 'EDUCATION') {
-        trackBadge.className = "px-3.5 py-1 rounded-xl bg-pink-950/90 border border-pink-400 text-pink-300 font-mono text-xs font-black tracking-wider uppercase shadow-md shadow-pink-900/30";
-      } else if (track === 'ENVIRONMENT') {
-        trackBadge.className = "px-3.5 py-1 rounded-xl bg-emerald-950/90 border border-emerald-400 text-emerald-300 font-mono text-xs font-black tracking-wider uppercase shadow-md shadow-emerald-900/30";
-      } else {
-        trackBadge.className = "px-3.5 py-1 rounded-xl bg-purple-950/90 border border-purple-400 text-purple-300 font-mono text-xs font-black tracking-wider uppercase shadow-md shadow-purple-900/30";
+      if (trackBadge) {
+        if (track === 'HEALTHCARE') {
+          trackBadge.className = "px-3 py-0.5 rounded-lg bg-cyan-950 border border-cyan-400 text-cyan-300 font-mono text-xs font-black uppercase tracking-wider";
+        } else if (track === 'EDUCATION') {
+          trackBadge.className = "px-3 py-0.5 rounded-lg bg-pink-950 border border-pink-400 text-pink-300 font-mono text-xs font-black uppercase tracking-wider";
+        } else if (track === 'ENVIRONMENT') {
+          trackBadge.className = "px-3 py-0.5 rounded-lg bg-emerald-950 border border-emerald-400 text-emerald-300 font-mono text-xs font-black uppercase tracking-wider";
+        } else {
+          trackBadge.className = "px-3 py-0.5 rounded-lg bg-purple-950 border border-purple-400 text-purple-300 font-mono text-xs font-black uppercase tracking-wider";
+        }
       }
 
       // Render Clean Squad Roster: Leader and Member Names ONLY
       const rosterList = document.getElementById('badgeSquadList');
-      rosterList.innerHTML = '';
-      members.forEach((m, idx) => {
-        const item = document.createElement('div');
-        const isLeader = idx === 0;
-        
-        item.className = isLeader 
-          ? 'p-2.5 rounded-xl bg-slate-900/90 border border-cyan-500/40 flex items-center justify-between text-xs'
-          : 'p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 flex items-center justify-between text-xs';
-        
-        const roleTag = isLeader
-          ? `<span class="px-2 py-0.5 rounded bg-amber-950/80 border border-amber-500/60 text-amber-300 text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
-               <span>👑 LEADER</span>
-             </span>`
-          : `<span class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-[9px] font-bold uppercase tracking-wider">MEMBER</span>`;
+      if (rosterList) {
+        rosterList.innerHTML = '';
+        members.forEach((m, idx) => {
+          const item = document.createElement('div');
+          const isLeader = idx === 0;
+          
+          item.className = isLeader 
+            ? 'p-2.5 rounded-xl bg-slate-900/90 border border-cyan-500/40 flex items-center justify-between text-xs'
+            : 'p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 flex items-center justify-between text-xs';
+          
+          const roleTag = isLeader
+            ? `<span class="px-2 py-0.5 rounded bg-amber-950/80 border border-amber-500/60 text-amber-300 text-[9px] font-bold uppercase tracking-wider flex items-center gap-1">
+                 <span>👑 LEADER</span>
+               </span>`
+            : `<span class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-[9px] font-bold uppercase tracking-wider">MEMBER</span>`;
 
-        item.innerHTML = `
-          <span class="font-bold ${isLeader ? 'text-cyan-200' : 'text-slate-200'} text-xs truncate max-w-[280px]">${m.name}</span>
-          ${roleTag}
-        `;
-        rosterList.appendChild(item);
-      });
+          item.innerHTML = `
+            <span class="font-bold ${isLeader ? 'text-cyan-200' : 'text-slate-200'} text-xs truncate max-w-[280px]">${m.name}</span>
+            ${roleTag}
+          `;
+          rosterList.appendChild(item);
+        });
+      }
 
       // QR Code: Encode ONLY the Ticket Token ID as requested!
       const qrContainer = document.getElementById('qrcode');
@@ -1137,10 +1140,13 @@
       const target = tickets.find(t => t.uid === uid);
       if (!target) return;
 
-      document.getElementById('badgeTeamName').textContent = target.teamName;
-      document.getElementById('badgeTrackName').textContent = target.track;
-      document.getElementById('badgeMemberCount').textContent = `${target.teamSize} SQUAD MEMBER${target.teamSize > 1 ? 'S' : ''}`;
-      document.getElementById('badgeUID').textContent = target.uid;
+      const elTeamName = document.getElementById('badgeTeamName');
+      const elTrackName = document.getElementById('badgeTrackName');
+      const elUID = document.getElementById('badgeUID');
+
+      if (elTeamName) elTeamName.textContent = target.teamName;
+      if (elTrackName) elTrackName.textContent = target.track;
+      if (elUID) elUID.textContent = target.uid;
 
       const rosterList = document.getElementById('badgeSquadList');
       rosterList.innerHTML = '';

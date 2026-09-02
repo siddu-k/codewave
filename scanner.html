@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR Scanner & Payment Desk | CODEWAVE 2K26</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- HTML5 QR Code Scanner Library -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brandBg: '#05070e',
+            brandCard: '#080d1a',
+            neonCyan: '#00f2fe',
+            neonPink: '#ff2a85',
+            neonGreen: '#00e699',
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #05070e;
+      color: #f3f4f6;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .neon-border {
+      border: 1px solid rgba(0, 242, 254, 0.4);
+      box-shadow: 0 0 25px rgba(0, 242, 254, 0.1);
+    }
+    #reader video {
+      border-radius: 1rem;
+      object-fit: cover;
+    }
+    #reader {
+      border: none !important;
+    }
+    #reader__scan_region {
+      background: transparent !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#05070e] text-slate-100 flex flex-col justify-between">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-[#070b16] sticky top-0 z-30">
+    <div class="max-w-3xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-slate-900 border border-cyan-400 flex items-center justify-center font-mono font-bold text-cyan-400 text-xs">
+          CW
+        </div>
+        <div>
+          <h1 class="font-black text-sm tracking-wide text-white">CODEWAVE 2K26</h1>
+          <p class="text-[10px] font-mono text-cyan-400">QR Scanner & Payment Desk</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- View Registrations Button -->
+        <button onclick="openRegistrationsModal()" class="px-3 py-1.5 rounded-lg bg-cyan-950 border border-cyan-500/60 hover:bg-cyan-400 hover:text-black text-cyan-300 font-mono font-bold text-xs transition flex items-center gap-1.5 shadow-sm">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+          <span>View Registrations</span>
+          <span id="headerCountBadge" class="text-[10px] px-1.5 py-0.2 rounded-full bg-cyan-900 text-cyan-200 ml-0.5">0</span>
+        </button>
+
+        <a href="index.html" class="text-xs font-mono text-slate-400 hover:text-cyan-400 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 transition">
+          Exit
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workflow Container -->
+  <main class="max-w-2xl mx-auto w-full px-4 py-6 space-y-6">
+
+    <!-- 1. SCAN SECTION -->
+    <div class="bg-[#080d1a] border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4 shadow-xl">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xs font-mono font-bold tracking-wider uppercase text-cyan-400 flex items-center gap-2">
+          <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+          <span>SCAN TICKET QR CODE</span>
+        </h2>
+        <span id="scanStatusBadge" class="text-[10px] font-mono text-slate-400">Camera Ready</span>
+      </div>
+
+      <!-- Camera Preview Box -->
+      <div class="relative bg-slate-950 rounded-xl overflow-hidden border border-slate-800 min-h-[240px] flex items-center justify-center">
+        <div id="reader" class="w-full"></div>
+        <div id="startPrompt" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/95 p-6 text-center space-y-3">
+          <svg class="w-10 h-10 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <button onclick="startScanner()" class="px-6 py-2.5 bg-cyan-400 hover:bg-cyan-300 text-black font-mono font-bold text-xs uppercase rounded-xl transition shadow-lg shadow-cyan-400/20">
+            START CAMERA SCANNER
+          </button>
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <button id="btnStop" onclick="stopScanner()" class="hidden flex-1 py-2 bg-slate-900 border border-slate-700 hover:border-slate-500 text-xs font-mono text-slate-300 rounded-xl transition">
+          Stop Camera
+        </button>
+        <button id="btnFlip" onclick="flipScanner()" class="hidden px-4 py-2 bg-slate-900 border border-slate-700 hover:border-slate-500 text-xs font-mono text-slate-300 rounded-xl transition">
+          Switch Camera
+        </button>
+      </div>
+
+      <!-- Or Manual Search -->
+      <div class="pt-3 border-t border-slate-800 flex gap-2">
+        <input type="text" id="manualInput" placeholder="Or enter Token ID (e.g. CW26-123456)" class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs font-mono text-white uppercase focus:outline-none focus:border-cyan-400">
+        <button onclick="searchManualToken()" class="px-4 py-2 bg-slate-800 hover:bg-cyan-400 hover:text-black text-xs font-mono font-bold text-white rounded-xl transition">
+          SEARCH
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. SCANNED DETAILS & PAYMENT SECTION -->
+    <div id="detailsCard" class="hidden bg-[#080d1a] neon-border rounded-2xl p-5 sm:p-6 space-y-5">
+      
+      <!-- Top Info -->
+      <div class="flex items-start justify-between pb-4 border-b border-slate-800">
+        <div>
+          <span id="teamTrack" class="px-2.5 py-0.5 rounded bg-cyan-950 border border-cyan-500 text-cyan-300 text-[10px] font-mono font-bold uppercase">
+            TRACK
+          </span>
+          <h3 id="teamName" class="text-xl font-black text-white mt-1.5">
+            Squad Name
+          </h3>
+        </div>
+        <div class="text-right">
+          <p class="text-[9px] font-mono text-slate-400 uppercase">TOKEN ID</p>
+          <p id="tokenUid" class="text-base font-mono font-black text-cyan-400">
+            CW26-000000
+          </p>
+          <p id="teamSize" class="text-[10px] font-mono text-slate-400">1 Member</p>
+        </div>
+      </div>
+
+      <!-- Squad Members Details -->
+      <div>
+        <p class="text-[10px] font-mono uppercase text-slate-400 tracking-wider mb-2">SQUAD ROSTER & CONTACTS</p>
+        <div id="membersContainer" class="space-y-2 font-mono text-xs"></div>
+      </div>
+
+      <!-- Payment & DB Update Form -->
+      <div class="pt-4 border-t border-slate-800 space-y-3">
+        <p class="text-[10px] font-mono font-bold text-pink-400 uppercase tracking-wider">
+          PAYMENT STATUS & DB UPDATE
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[10px] font-mono text-slate-400 uppercase mb-1">Payment Status *</label>
+            <select id="paymentStatusSelect" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono font-bold text-cyan-300 focus:outline-none focus:border-cyan-400">
+              <option value="PAID">✅ PAID</option>
+              <option value="PENDING">⏳ PENDING</option>
+              <option value="WAIVED">⭐ FREE / WAIVED</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-mono text-slate-400 uppercase mb-1">Payment Mode</label>
+            <select id="paymentModeSelect" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-400">
+              <option value="UPI">UPI / PhonePe / GPay</option>
+              <option value="CASH">Cash</option>
+              <option value="ONLINE">Online Transfer</option>
+              <option value="NONE">None</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-1">
+          <span id="updateMsg" class="text-[11px] font-mono text-emerald-400 font-bold"></span>
+        </div>
+
+        <button onclick="updateDatabase()" id="btnUpdate" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-black text-xs font-mono uppercase tracking-wider rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-cyan-400/20">
+          <svg id="updateSpinner" class="w-4 h-4 hidden animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="4" class="opacity-25"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" class="opacity-75"></path></svg>
+          <span id="updateBtnText">UPDATE IN DB</span>
+        </button>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- 3. TEAM-WISE REGISTRATIONS MODAL -->
+  <div id="registrationsModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#080d1a] border border-cyan-500/40 rounded-3xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
+      
+      <!-- Modal Header -->
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/90">
+        <div>
+          <h3 class="font-black text-base text-white flex items-center gap-2">
+            <span>REGISTERED SQUADS</span>
+            <span id="modalTotalCount" class="text-xs font-mono px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800">0</span>
+          </h3>
+          <p class="text-[11px] font-mono text-slate-400">Complete team-wise attendee details from Firebase</p>
+        </div>
+        <button onclick="closeRegistrationsModal()" class="w-8 h-8 rounded-xl bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white flex items-center justify-center font-bold">
+          ✕
+        </button>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="p-4 border-b border-slate-800 bg-[#060a15]">
+        <input type="text" id="modalSearchInput" oninput="filterModalTeams()" placeholder="Search by team, member name, roll number, or track..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-400">
+      </div>
+
+      <!-- Teams List Container -->
+      <div id="modalTeamsList" class="p-4 overflow-y-auto space-y-3 flex-1">
+        <!-- Rendered dynamically -->
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="py-4 text-center text-[10px] font-mono text-slate-600 border-t border-slate-900">
+    CODEWAVE 2K26 • CSE DEPT • PYDAH COLLEGE
+  </footer>
+
+  <!-- Firebase Script -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+    import { getAuth, signInWithCustomToken, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+    import { getFirestore, collection, onSnapshot, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+    const explicitFirebaseConfig = {
+      apiKey: "AIzaSyBEFG8QGZtwhHCA7YLsU_OIt2zLjLFsR3w",
+      authDomain: "codewave-92f1f.firebaseapp.com",
+      databaseURL: "https://codewave-92f1f-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "codewave-92f1f",
+      storageBucket: "codewave-92f1f.firebasestorage.app",
+      messagingSenderId: "159668323560",
+      appId: "1:159668323560:web:9bb5f1b7ef9539d3c0f55d"
+    };
+
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : explicitFirebaseConfig;
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'codewave-92f1f';
+
+    let db = null;
+    let auth = null;
+    let registrations = [];
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      db = getFirestore(app);
+
+      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+        signInWithCustomToken(auth, __initial_auth_token).catch(() => signInAnonymously(auth));
+      } else {
+        signInAnonymously(auth).catch(e => console.warn(e));
+      }
+
+      const colRef = collection(db, 'artifacts', appId, 'public', 'data', 'registrations');
+      onSnapshot(colRef, (snapshot) => {
+        registrations = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        // Update counters
+        const headerCount = document.getElementById('headerCountBadge');
+        if (headerCount) headerCount.textContent = registrations.length;
+        const modalCount = document.getElementById('modalTotalCount');
+        if (modalCount) modalCount.textContent = registrations.length;
+
+        // Render modal list if open
+        renderModalSquads(registrations);
+
+        // If current team is open in desk, keep in sync
+        if (window.activeTeamId) {
+          const fresh = registrations.find(r => r.id === window.activeTeamId || r.uid === window.activeTokenId);
+          if (fresh) window.renderTeamDetails(fresh);
+        }
+      });
+    } catch (e) {
+      console.warn("Firebase note:", e);
+    }
+
+    window.findTeamByToken = function(token) {
+      const q = token.trim().toUpperCase();
+      return registrations.find(r => r.uid && r.uid.toUpperCase() === q) || null;
+    };
+
+    window.getAllSquads = function() {
+      return registrations;
+    };
+
+    window.updateTeamInCloud = async function(docId, data) {
+      if (!db) return { success: false, error: "No DB" };
+      try {
+        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'registrations', docId);
+        await updateDoc(docRef, { ...data, updatedAt: new Date().toISOString() });
+        return { success: true };
+      } catch (err) {
+        console.error(err);
+        return { success: false, error: err.message };
+      }
+    };
+  </script>
+
+  <!-- Scanner & Modal Logic -->
+  <script>
+    let html5QrCode = null;
+    let facingMode = "environment";
+    window.activeTeamId = null;
+    window.activeTokenId = null;
+
+    async function startScanner() {
+      document.getElementById('startPrompt').classList.add('hidden');
+      document.getElementById('btnStop').classList.remove('hidden');
+      document.getElementById('btnFlip').classList.remove('hidden');
+      document.getElementById('scanStatusBadge').textContent = "Scanning...";
+
+      if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("reader");
+      }
+
+      try {
+        await html5QrCode.start(
+          { facingMode: facingMode },
+          { fps: 10, qrbox: { width: 220, height: 220 } },
+          (decoded) => handleScannedToken(decoded),
+          () => {}
+        );
+      } catch (e) {
+        alert("Camera unavailable. You can type Token ID directly below.");
+        stopScanner();
+      }
+    }
+
+    async function stopScanner() {
+      if (html5QrCode && html5QrCode.isScanning) {
+        await html5QrCode.stop();
+      }
+      document.getElementById('startPrompt').classList.remove('hidden');
+      document.getElementById('btnStop').classList.add('hidden');
+      document.getElementById('btnFlip').classList.add('hidden');
+      document.getElementById('scanStatusBadge').textContent = "Camera Stopped";
+    }
+
+    async function flipScanner() {
+      facingMode = facingMode === "environment" ? "user" : "environment";
+      await stopScanner();
+      await startScanner();
+    }
+
+    function searchManualToken() {
+      const val = document.getElementById('manualInput').value.trim();
+      if (!val) {
+        alert("Please enter a Token ID");
+        return;
+      }
+      handleScannedToken(val);
+    }
+
+    function handleScannedToken(token) {
+      console.log("Scanned Token:", token);
+      const team = window.findTeamByToken ? window.findTeamByToken(token) : null;
+      if (!team) {
+        alert(`No team found for Token "${token}". Check Token ID.`);
+        return;
+      }
+      window.renderTeamDetails(team);
+      document.getElementById('detailsCard').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    window.renderTeamDetails = function(team) {
+      window.activeTeamId = team.id;
+      window.activeTokenId = team.uid;
+
+      const card = document.getElementById('detailsCard');
+      card.classList.remove('hidden');
+
+      document.getElementById('teamName').textContent = team.teamName || "Team";
+      document.getElementById('teamTrack').textContent = team.track || "TRACK";
+      document.getElementById('tokenUid').textContent = team.uid || "CW26-000000";
+      document.getElementById('teamSize').textContent = `${team.teamSize || (team.roster ? team.roster.length : 1)} Member(s)`;
+
+      document.getElementById('paymentStatusSelect').value = team.paymentStatus || "PENDING";
+      document.getElementById('paymentModeSelect').value = team.paymentMode || "UPI";
+      document.getElementById('updateMsg').textContent = "";
+
+      const container = document.getElementById('membersContainer');
+      container.innerHTML = '';
+
+      if (team.roster && Array.isArray(team.roster)) {
+        team.roster.forEach((m, idx) => {
+          const isLead = idx === 0;
+          const div = document.createElement('div');
+          div.className = "p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between";
+          div.innerHTML = `
+            <div>
+              <span class="font-bold text-slate-200">${m.name}</span>
+              <span class="text-[9px] ml-1.5 px-1.5 py-0.5 rounded ${isLead ? 'bg-amber-950 text-amber-300 border border-amber-600' : 'bg-slate-900 text-slate-400'}">${isLead ? 'LEADER' : 'MEMBER'}</span>
+            </div>
+            <div class="text-[10px] text-right">
+              <span class="text-cyan-400 font-bold">${m.roll || ''}</span>
+              <span class="text-slate-500 ml-2">${m.phone || ''}</span>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      }
+    };
+
+    async function updateDatabase() {
+      if (!window.activeTeamId) return;
+
+      const btn = document.getElementById('btnUpdate');
+      const spinner = document.getElementById('updateSpinner');
+      const text = document.getElementById('updateBtnText');
+      const msg = document.getElementById('updateMsg');
+
+      spinner.classList.remove('hidden');
+      text.textContent = "SAVING...";
+      btn.disabled = true;
+
+      const status = document.getElementById('paymentStatusSelect').value;
+      const mode = document.getElementById('paymentModeSelect').value;
+
+      const res = await window.updateTeamInCloud(window.activeTeamId, {
+        paymentStatus: status,
+        paymentMode: mode
+      });
+
+      spinner.classList.add('hidden');
+      text.textContent = "UPDATE IN DB";
+      btn.disabled = false;
+
+      if (res && res.success) {
+        msg.textContent = `✅ Saved as ${status} in Firebase!`;
+        setTimeout(() => { msg.textContent = ""; }, 3500);
+      } else {
+        alert("Failed to update: " + (res.error || "error"));
+      }
+    }
+
+    // Modal Controller Functions
+    function openRegistrationsModal() {
+      document.getElementById('registrationsModal').classList.remove('hidden');
+      const squads = window.getAllSquads ? window.getAllSquads() : [];
+      renderModalSquads(squads);
+    }
+
+    function closeRegistrationsModal() {
+      document.getElementById('registrationsModal').classList.add('hidden');
+    }
+
+    function renderModalSquads(list) {
+      const container = document.getElementById('modalTeamsList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (list.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-xs font-mono text-slate-500">No registered squads yet.</div>`;
+        return;
+      }
+
+      list.forEach(item => {
+        const isPaid = item.paymentStatus === 'PAID';
+        const isWaived = item.paymentStatus === 'WAIVED';
+
+        const paymentPill = isPaid 
+          ? `<span class="px-2 py-0.5 rounded-full bg-emerald-950 border border-emerald-500 text-emerald-300 text-[9px] font-bold">PAID</span>`
+          : isWaived
+          ? `<span class="px-2 py-0.5 rounded-full bg-purple-950 border border-purple-500 text-purple-300 text-[9px] font-bold">WAIVED</span>`
+          : `<span class="px-2 py-0.5 rounded-full bg-amber-950 border border-amber-500 text-amber-300 text-[9px] font-bold">PENDING</span>`;
+
+        let membersHtml = '';
+        if (item.roster && Array.isArray(item.roster)) {
+          membersHtml = item.roster.map((m, idx) => `
+            <div class="flex items-center justify-between text-[11px] py-1 border-b border-slate-900/60 last:border-0">
+              <div>
+                <span class="${idx === 0 ? 'text-amber-300 font-bold' : 'text-slate-300'}">${m.name || 'Member'}</span>
+                <span class="text-[9px] text-slate-500 ml-1">(${idx === 0 ? 'Leader' : `M${idx+1}`})</span>
+              </div>
+              <div class="text-[10px]">
+                <span class="text-cyan-400 font-mono">${m.roll || ''}</span>
+                <span class="text-slate-500 ml-2">${m.phone || ''}</span>
+              </div>
+            </div>
+          `).join('');
+        }
+
+        const card = document.createElement('div');
+        card.className = "p-4 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-cyan-500/50 transition space-y-2.5";
+        card.innerHTML = `
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs font-black text-white">${item.teamName || 'Team'}</span>
+                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 border border-slate-800">${item.track || 'Track'}</span>
+              </div>
+              <span class="text-[10px] font-mono font-bold text-cyan-400">${item.uid || ''}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              ${paymentPill}
+              <button onclick="selectTeamFromModal('${item.id}')" class="px-3 py-1 bg-cyan-500/10 hover:bg-cyan-500 text-cyan-300 hover:text-black font-mono font-bold text-[10px] rounded-lg border border-cyan-500/40 transition">
+                Load Desk
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-slate-950/80 rounded-xl p-2.5 border border-slate-800/80 font-mono">
+            <p class="text-[9px] text-slate-500 uppercase tracking-wider mb-1">Squad Members (${item.teamSize || (item.roster ? item.roster.length : 1)})</p>
+            ${membersHtml}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function filterModalTeams() {
+      const q = (document.getElementById('modalSearchInput').value || '').toLowerCase();
+      const all = window.getAllSquads ? window.getAllSquads() : [];
+      if (!q) {
+        renderModalSquads(all);
+        return;
+      }
+      const filtered = all.filter(item => {
+        const team = (item.teamName || '').toLowerCase();
+        const uid = (item.uid || '').toLowerCase();
+        const track = (item.track || '').toLowerCase();
+        const members = item.roster ? item.roster.map(m => `${m.name} ${m.roll} ${m.phone}`).join(' ').toLowerCase() : '';
+        return team.includes(q) || uid.includes(q) || track.includes(q) || members.includes(q);
+      });
+      renderModalSquads(filtered);
+    }
+
+    function selectTeamFromModal(docId) {
+      const all = window.getAllSquads ? window.getAllSquads() : [];
+      const target = all.find(r => r.id === docId);
+      if (target) {
+        window.renderTeamDetails(target);
+        closeRegistrationsModal();
+        document.getElementById('detailsCard').scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  </script>
+</body>
+</html>
